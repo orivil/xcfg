@@ -6,11 +6,14 @@ package xcfg
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path/filepath"
 )
+
+var ErrFileNotExist = errors.New("config file not exist")
 
 const (
 	jsonExt = ".json"
