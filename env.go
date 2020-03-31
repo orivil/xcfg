@@ -13,6 +13,15 @@ import (
 	"strconv"
 )
 
+type NamespaceError struct {
+	Namespace string
+	Err       string
+}
+
+func (n NamespaceError) Error() string {
+	return fmt.Sprintf("namespace [%s]: %s", n.Namespace, n.Err)
+}
+
 type Env map[string]interface{}
 
 func (e Env) Unmarshal(schema interface{}) error {
@@ -24,12 +33,39 @@ func (e Env) Unmarshal(schema interface{}) error {
 	return toml.Unmarshal(buf.Bytes(), schema)
 }
 
-func (e Env) GetSub(namespace string) (env Env, ok bool) {
-	mp, o := e[namespace].(map[string]interface{})
+func (e Env) UnmarshalSub(namespace string, schema interface{}) error {
+	subs, ok := e[namespace]
+	if !ok {
+		return NamespaceError{
+			Namespace: namespace,
+			Err:       "not exist",
+		}
+	}
+	buf := new(bytes.Buffer)
+	err := toml.NewEncoder(buf).Encode(subs)
+	if err != nil {
+		return err
+	}
+	return toml.Unmarshal(buf.Bytes(), schema)
+}
+
+func (e Env) GetSub(namespace string) (env Env, err error) {
+	subs, ok := e[namespace]
+	if !ok {
+		return nil, NamespaceError{
+			Namespace: namespace,
+			Err:       "not exist",
+		}
+	}
+
+	mp, o := subs.(map[string]interface{})
 	if !o {
-		return nil, false
+		return nil, NamespaceError{
+			Namespace: namespace,
+			Err:       "incorrect data format, should like: 'key=value'",
+		}
 	} else {
-		return mp, true
+		return mp, nil
 
 	}
 }

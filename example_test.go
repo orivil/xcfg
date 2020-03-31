@@ -67,32 +67,39 @@ func ExampleEnv_Unmarshal() {
 	if err != nil {
 		panic(err)
 	} else {
+		// 读取所有配置
 		cfg := &config{}
 		err = env.Unmarshal(cfg)
 		if err != nil {
 			panic(err)
 		}
+		// 解析 mysql 配置
 		mysql := &Mysql{}
-		if mysqlEnv, ok := env.GetSub("mysql"); ok {
-			err = mysqlEnv.Unmarshal(mysql)
-			if err != nil {
-				panic(err)
-			}
+		err = env.UnmarshalSub("mysql", mysql)
+		if err != nil {
+			panic(err)
 		}
+		// 解析 postgres 配置
 		postgres := &Postgres{}
-		if postgresEnv, ok := env.GetSub("postgres"); ok {
-			err = postgresEnv.Unmarshal(postgres)
-			if err != nil {
-				panic(err)
-			}
+		err = env.UnmarshalSub("postgres", postgres)
+		if err != nil {
+			panic(err)
 		}
-		fmt.Println(*cfg.Mysql)
-		fmt.Println(*cfg.Postgres)
+		needMysql := Mysql{
+			Host:       "127.0.0.1",
+			Port:       "3306",
+			User:       "root",
+			Password:   "123456",
+			DBName:     "ginadmin",
+			Parameters: "charset=utf8mb4&parseTime=True&loc=Local&allowNativePasswords=true",
+		}
 		fmt.Println(reflect.DeepEqual(*cfg.Postgres, *postgres))
 		fmt.Println(reflect.DeepEqual(*cfg.Mysql, *mysql))
+		fmt.Println(reflect.DeepEqual(needMysql, *mysql))
 	}
 
 	// Output:
+	// true
 	// true
 	// true
 }
