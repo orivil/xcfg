@@ -19,7 +19,7 @@ type NamespaceError struct {
 }
 
 func (n NamespaceError) Error() string {
-	return fmt.Sprintf("namespace [%s]: %s", n.Namespace, n.Err)
+	return fmt.Sprintf("config namespace [%s]: %s", n.Namespace, n.Err)
 }
 
 type Env map[string]interface{}
@@ -62,7 +62,7 @@ func (e Env) GetSub(namespace string) (env Env, err error) {
 	if !o {
 		return nil, NamespaceError{
 			Namespace: namespace,
-			Err:       "incorrect data format, should like: 'key=value'",
+			Err:       "incorrect config data format, should like: 'key=value'",
 		}
 	} else {
 		return mp, nil
